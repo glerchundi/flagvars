@@ -64,6 +64,9 @@ type ecdsaPublicKeyValue ecdsa.PublicKey
 
 // String implements flag.Value.String.
 func (ecdsaPublicKey ecdsaPublicKeyValue) String() string {
+	if ecdsaPublicKey.Curve == nil || ecdsaPublicKey.X == nil || ecdsaPublicKey.Y == nil {
+		return ""
+	}
 	return hex.EncodeToString(elliptic.Marshal(ecdsaPublicKey.Curve, ecdsaPublicKey.X, ecdsaPublicKey.Y))
 }
 
