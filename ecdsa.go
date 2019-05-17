@@ -5,35 +5,34 @@ import (
 	"crypto/elliptic"
 	"encoding/hex"
 	"flag"
-	"fmt"
 	"math/big"
 	"strings"
 )
 
 // ecdsaPrivateKeyValue adapts ecdsa.PrivateKey for use as a flag. Value of flag
 // is HEX encoded.
-type ecdsaPrivateKeyValue ecdsa.PrivateKey
+type ecdsaPrivateKeyValue struct {
+	dst *ecdsa.PrivateKey
+}
 
 // String implements flag.Value.String.
-func (ecdsaPrivateKey ecdsaPrivateKeyValue) String() string {
+func (v ecdsaPrivateKeyValue) String() string {
 	return "<redacted>"
 }
 
 // Set implements flag.Value.Set.
-func (ecdsaPrivateKey *ecdsaPrivateKeyValue) Set(value string) error {
+func (v *ecdsaPrivateKeyValue) Set(value string) error {
 	data, err := hex.DecodeString(strings.TrimSpace(value))
 	if err != nil {
 		return err
 	}
 
-	if len(data)*8 != ecdsaPrivateKey.Params().BitSize {
-		return fmt.Errorf("invalid length expected %d bits", ecdsaPrivateKey.Params().BitSize)
-	}
-
 	// https://golang.org/src/crypto/ecdsa/ecdsa.go?s=2956:3027#L95
+	priv := ecdsa.PrivateKey{PublicKey: ecdsa.PublicKey{Curve: elliptic.P256()}}
 	k := (&big.Int{}).SetBytes(data)
-	ecdsaPrivateKey.D = k
-	ecdsaPrivateKey.PublicKey.X, ecdsaPrivateKey.PublicKey.Y = ecdsaPrivateKey.Curve.ScalarBaseMult(k.Bytes())
+	priv.D = k
+	priv.PublicKey.X, priv.PublicKey.Y = priv.Curve.ScalarBaseMult(k.Bytes())
+	*v.dst = priv
 
 	return nil
 }
@@ -46,37 +45,37 @@ func (*ecdsaPrivateKeyValue) Type() string {
 // ECDSAPrivateKey creates and returns a new flag.Value compliant ECDSA
 // PrivateKey parser.
 func ECDSAPrivateKey(p *ecdsa.PrivateKey, c elliptic.Curve, value string) flag.Value {
-	epk := &ecdsaPrivateKeyValue{
-		PublicKey: ecdsa.PublicKey{
-			Curve: c,
-		},
-	}
+	epk := &ecdsaPrivateKeyValue{dst: p}
 	if value != "" {
 		_ = epk.Set(value)
 	}
-	*p = ecdsa.PrivateKey(*epk)
 	return epk
 }
 
 // ecdsaPublicKeyValue adapts ecdsa.PublicKey for use as a flag. Value of flag
 // is HEX encoded.
-type ecdsaPublicKeyValue ecdsa.PublicKey
+type ecdsaPublicKeyValue struct {
+	dst *ecdsa.PublicKey
+}
 
 // String implements flag.Value.String.
-func (ecdsaPublicKey ecdsaPublicKeyValue) String() string {
-	if ecdsaPublicKey.Curve == nil || ecdsaPublicKey.X == nil || ecdsaPublicKey.Y == nil {
+func (v ecdsaPublicKeyValue) String() string {
+	if v.dst != nil || v.dst.Curve == nil || v.dst.X == nil || v.dst.Y == nil {
 		return ""
 	}
-	return hex.EncodeToString(elliptic.Marshal(ecdsaPublicKey.Curve, ecdsaPublicKey.X, ecdsaPublicKey.Y))
+	return hex.EncodeToString(elliptic.Marshal(v.dst.Curve, v.dst.X, v.dst.Y))
 }
 
 // Set implements flag.Value.Set.
-func (ecdsaPublicKey *ecdsaPublicKeyValue) Set(value string) error {
+func (v *ecdsaPublicKeyValue) Set(value string) error {
 	data, err := hex.DecodeString(strings.TrimSpace(value))
 	if err != nil {
 		return err
 	}
-	ecdsaPublicKey.X, ecdsaPublicKey.Y = elliptic.Unmarshal(ecdsaPublicKey.Curve, data)
+	pub := ecdsa.PublicKey{Curve: elliptic.P256()}
+	pub.X, pub.Y = elliptic.Unmarshal(pub.Curve, data)
+	*v.dst = pub
+
 	return nil
 }
 
@@ -88,12 +87,9 @@ func (*ecdsaPublicKeyValue) Type() string {
 // ECDSAPublicKey creates and returns a new flag.Value compliant ECDSA PublicKey
 // parser.
 func ECDSAPublicKey(p *ecdsa.PublicKey, c elliptic.Curve, value string) flag.Value {
-	epk := &ecdsaPublicKeyValue{
-		Curve: c,
-	}
+	epk := &ecdsaPublicKeyValue{dst: p}
 	if value != "" {
 		_ = epk.Set(value)
 	}
-	*p = ecdsa.PublicKey(*epk)
 	return epk
 }

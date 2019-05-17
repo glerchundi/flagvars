@@ -1,6 +1,7 @@
 package flagvars
 
 import (
+	"fmt"
 	"bytes"
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -24,6 +25,7 @@ func TestECDSAPrivateKey(t *testing.T) {
 		t.Fatalf("got: %v, expected %v", gotPriv, expectedPriv)
 	}
 }
+
 func TestECDSAPublicKey(t *testing.T) {
 	var gotPub ecdsa.PublicKey
 	_ = ECDSAPublicKey(&gotPub, elliptic.P256(), "04a36af3acb87ca443a18f324fe903c80706763513a76f1cbef841963bcfc1b7fc6950a2972c72d74109e653ab30042e7d99ba4ec7e7497b587e575b11c360efd6")
