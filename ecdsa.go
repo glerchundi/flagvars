@@ -2,15 +2,14 @@ package flagvars
 
 import (
 	"crypto/ecdsa"
-	"crypto/elliptic"
-	"encoding/hex"
+	"crypto/x509"
+	"encoding/pem"
+	"errors"
 	"flag"
-	"math/big"
-	"strings"
 )
 
 // ecdsaPrivateKeyValue adapts ecdsa.PrivateKey for use as a flag. Value of flag
-// is HEX encoded.
+// is PEM encoded.
 type ecdsaPrivateKeyValue struct {
 	dst *ecdsa.PrivateKey
 }
@@ -22,17 +21,16 @@ func (v ecdsaPrivateKeyValue) String() string {
 
 // Set implements flag.Value.Set.
 func (v *ecdsaPrivateKeyValue) Set(value string) error {
-	data, err := hex.DecodeString(strings.TrimSpace(value))
+	block, _ := pem.Decode([]byte(value))
+	if block == nil || block.Type != "EC PRIVATE KEY" {
+		return errors.New("failed to find a suitable pem block type")
+	}
+
+	priv, err := x509.ParseECPrivateKey(block.Bytes)
 	if err != nil {
 		return err
 	}
-
-	// https://golang.org/src/crypto/ecdsa/ecdsa.go?s=2956:3027#L95
-	priv := ecdsa.PrivateKey{PublicKey: ecdsa.PublicKey{Curve: elliptic.P256()}}
-	k := (&big.Int{}).SetBytes(data)
-	priv.D = k
-	priv.PublicKey.X, priv.PublicKey.Y = priv.Curve.ScalarBaseMult(k.Bytes())
-	*v.dst = priv
+	*v.dst = *priv
 
 	return nil
 }
@@ -44,52 +42,53 @@ func (*ecdsaPrivateKeyValue) Type() string {
 
 // ECDSAPrivateKey creates and returns a new flag.Value compliant ECDSA
 // PrivateKey parser.
-func ECDSAPrivateKey(p *ecdsa.PrivateKey, c elliptic.Curve, value string) flag.Value {
-	epk := &ecdsaPrivateKeyValue{dst: p}
-	if value != "" {
-		_ = epk.Set(value)
-	}
-	return epk
+func ECDSAPrivateKey(p *ecdsa.PrivateKey) flag.Value {
+	return &ecdsaPrivateKeyValue{dst: p}
 }
 
 // ecdsaPublicKeyValue adapts ecdsa.PublicKey for use as a flag. Value of flag
-// is HEX encoded.
+// is PEM encoded.
 type ecdsaPublicKeyValue struct {
 	dst *ecdsa.PublicKey
 }
 
 // String implements flag.Value.String.
 func (v ecdsaPublicKeyValue) String() string {
-	if v.dst != nil || v.dst.Curve == nil || v.dst.X == nil || v.dst.Y == nil {
-		return ""
-	}
-	return hex.EncodeToString(elliptic.Marshal(v.dst.Curve, v.dst.X, v.dst.Y))
+	publicKeyDer, _ := x509.MarshalPKIXPublicKey(v.dst)
+	return string(pem.EncodeToMemory(&pem.Block{
+		Type:  "PUBLIC KEY",
+		Bytes: publicKeyDer,
+	}))
 }
 
 // Set implements flag.Value.Set.
 func (v *ecdsaPublicKeyValue) Set(value string) error {
-	data, err := hex.DecodeString(strings.TrimSpace(value))
+	block, _ := pem.Decode([]byte(value))
+	if block == nil || block.Type != "PUBLIC KEY" {
+		return errors.New("failed to find a suitable pem block type")
+	}
+
+	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
 	if err != nil {
 		return err
 	}
-	pub := ecdsa.PublicKey{Curve: elliptic.P256()}
-	pub.X, pub.Y = elliptic.Unmarshal(pub.Curve, data)
-	*v.dst = pub
+	switch pub := pub.(type) {
+	case *ecdsa.PublicKey:
+		*v.dst = *pub
+	default:
+		return errors.New("unknown type of public key")
+	}
 
 	return nil
 }
 
 // Type implements flag.Value.Type.
 func (*ecdsaPublicKeyValue) Type() string {
-	return "ecdsaPrivateKey"
+	return "ecdsaPublicKey"
 }
 
 // ECDSAPublicKey creates and returns a new flag.Value compliant ECDSA PublicKey
 // parser.
-func ECDSAPublicKey(p *ecdsa.PublicKey, c elliptic.Curve, value string) flag.Value {
-	epk := &ecdsaPublicKeyValue{dst: p}
-	if value != "" {
-		_ = epk.Set(value)
-	}
-	return epk
+func ECDSAPublicKey(p *ecdsa.PublicKey) flag.Value {
+	return &ecdsaPublicKeyValue{dst: p}
 }
