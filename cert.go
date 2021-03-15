@@ -18,6 +18,9 @@ type certificateValue struct {
 
 // String implements flag.Value.String.
 func (v certificateValue) String() string {
+	if v.dst == nil {
+		return ""
+	}
 	return string(pem.EncodeToMemory(&pem.Block{
 		Type:  "CERTIFICATE",
 		Bytes: v.dst.Raw,
