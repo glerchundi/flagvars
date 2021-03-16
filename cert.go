@@ -2,6 +2,7 @@ package flagvars
 
 import (
 	"bytes"
+	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
@@ -102,4 +103,46 @@ func (*certificatesValue) Type() string {
 // parser.
 func Certificates(c *[]*x509.Certificate) flag.Value {
 	return &certificatesValue{dst: c}
+}
+
+// tlsCertificateValue adapts tls.Certificate for use as a flag. Value of flag
+// is PEM encoded.
+type tlsCertificateValue struct {
+	dst *tls.Certificate
+}
+
+// String implements flag.Value.String.
+func (v tlsCertificateValue) String() string {
+	return "<redacted>"
+}
+
+// Set implements flag.Value.Set.
+func (v *tlsCertificateValue) Set(value string) error {
+	var block *pem.Block
+	data := []byte(value)
+	block, certPEM := pem.Decode(data)
+
+	// First block must be a private key
+	if block == nil || block.Type == "CERTIFICATE" {
+		return errors.New("failed to find a suitable pem block type")
+	}
+	keyPEM := data[:len(data)-len(certPEM)]
+
+	cert, err := tls.X509KeyPair(certPEM, keyPEM)
+	if err != nil {
+		return err
+	}
+	*v.dst = cert
+	return nil
+}
+
+// Type implements flag.Value.Type.
+func (*tlsCertificateValue) Type() string {
+	return "tls certificate"
+}
+
+// TLSCertificate creates and returns a new flag.Value compliant X509KeyPair
+// parser.
+func TLSCertificate(c *tls.Certificate) flag.Value {
+	return &tlsCertificateValue{dst: c}
 }
