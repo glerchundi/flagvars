@@ -24,7 +24,7 @@ func (v rsaPrivateKeyValue) String() string {
 func (v *rsaPrivateKeyValue) Set(value string) error {
 	value = strings.ReplaceAll(value, `\n`, "\n")
 	block, _ := pem.Decode([]byte(value))
-	if block == nil || block.Type != "RSA PRIVATE KEY" {
+	if block == nil || (block.Type != "PRIVATE KEY" && block.Type != "RSA PRIVATE KEY") {
 		return errors.New("failed to find a suitable pem block type")
 	}
 

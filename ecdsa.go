@@ -24,7 +24,7 @@ func (v ecdsaPrivateKeyValue) String() string {
 func (v *ecdsaPrivateKeyValue) Set(value string) error {
 	value = strings.ReplaceAll(value, `\n`, "\n")
 	block, _ := pem.Decode([]byte(value))
-	if block == nil || block.Type != "EC PRIVATE KEY" {
+	if block == nil || (block.Type != "PRIVATE KEY" && block.Type != "EC PRIVATE KEY") {
 		return errors.New("failed to find a suitable pem block type")
 	}
 
