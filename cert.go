@@ -30,7 +30,7 @@ func (v certificateValue) String() string {
 
 // Set implements flag.Value.Set.
 func (v *certificateValue) Set(value string) error {
-	value = strings.Replace(value, `\n`, "\n", -1)
+	value = strings.ReplaceAll(value, `\n`, "\n")
 	block, _ := pem.Decode([]byte(value))
 	if block == nil || block.Type != "CERTIFICATE" {
 		return errors.New("failed to find a suitable pem block type")
@@ -75,6 +75,7 @@ func (v certificatesValue) String() string {
 
 // Set implements flag.Value.Set.
 func (v *certificatesValue) Set(value string) error {
+	value = strings.ReplaceAll(value, `\n`, "\n")
 	data := []byte(value)
 	var blocks []byte
 	for len(data) > 0 {
@@ -119,6 +120,7 @@ func (v tlsCertificateValue) String() string {
 // Set implements flag.Value.Set.
 func (v *tlsCertificateValue) Set(value string) error {
 	var block *pem.Block
+	value = strings.ReplaceAll(value, `\n`, "\n")
 	data := []byte(value)
 	block, certPEM := pem.Decode(data)
 

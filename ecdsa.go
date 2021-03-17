@@ -22,7 +22,7 @@ func (v ecdsaPrivateKeyValue) String() string {
 
 // Set implements flag.Value.Set.
 func (v *ecdsaPrivateKeyValue) Set(value string) error {
-	value = strings.Replace(value, `\n`, "\n", -1)
+	value = strings.ReplaceAll(value, `\n`, "\n")
 	block, _ := pem.Decode([]byte(value))
 	if block == nil || block.Type != "EC PRIVATE KEY" {
 		return errors.New("failed to find a suitable pem block type")
@@ -65,7 +65,7 @@ func (v ecdsaPublicKeyValue) String() string {
 
 // Set implements flag.Value.Set.
 func (v *ecdsaPublicKeyValue) Set(value string) error {
-	value = strings.Replace(value, `\n`, "\n", -1)
+	value = strings.ReplaceAll(value, `\n`, "\n")
 	block, _ := pem.Decode([]byte(value))
 	if block == nil || block.Type != "PUBLIC KEY" {
 		return errors.New("failed to find a suitable pem block type")
