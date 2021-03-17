@@ -22,7 +22,7 @@ func (v rsaPrivateKeyValue) String() string {
 
 // Set implements flag.Value.Set.
 func (v *rsaPrivateKeyValue) Set(value string) error {
-	value = strings.Replace(value, `\n`, "\n", -1)
+	value = strings.ReplaceAll(value, `\n`, "\n")
 	block, _ := pem.Decode([]byte(value))
 	if block == nil || block.Type != "RSA PRIVATE KEY" {
 		return errors.New("failed to find a suitable pem block type")
@@ -65,7 +65,7 @@ func (v rsaPublicKeyValue) String() string {
 
 // Set implements flag.Value.Set.
 func (v *rsaPublicKeyValue) Set(value string) error {
-	value = strings.Replace(value, `\n`, "\n", -1)
+	value = strings.ReplaceAll(value, `\n`, "\n")
 	block, _ := pem.Decode([]byte(value))
 	if block == nil || block.Type != "PUBLIC KEY" {
 		return errors.New("failed to find a suitable pem block type")
