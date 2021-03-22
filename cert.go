@@ -106,6 +106,45 @@ func Certificates(c *[]*x509.Certificate) flag.Value {
 	return &certificatesValue{dst: c}
 }
 
+// certPoolValue adapts x509.CertPool for use as a flag. Value of flag
+// is PEM encoded.
+type certPoolValue struct {
+	dst *x509.CertPool
+}
+
+// String implements flag.Value.String.
+func (v certPoolValue) String() string {
+	if v.dst == nil {
+		return ""
+	}
+	var buf bytes.Buffer
+	for _, s := range (*v.dst).Subjects() {
+		fmt.Fprintln(&buf, string(s))
+	}
+	return buf.String()
+}
+
+// Set implements flag.Value.Set.
+func (v *certPoolValue) Set(value string) error {
+	pool := x509.NewCertPool()
+	if ok := pool.AppendCertsFromPEM([]byte(value)); !ok {
+		return fmt.Errorf("failed to append certs from pem")
+	}
+	*v.dst = *pool
+	return nil
+}
+
+// Type implements flag.Value.Type.
+func (*certPoolValue) Type() string {
+	return "certpool"
+}
+
+// CertPool creates and returns a new flag.Value compliant AppendCertsFromPEM
+// parser.
+func CertPool(c *x509.CertPool) flag.Value {
+	return &certPoolValue{dst: c}
+}
+
 // tlsCertificateValue adapts tls.Certificate for use as a flag. Value of flag
 // is PEM encoded.
 type tlsCertificateValue struct {
