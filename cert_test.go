@@ -82,6 +82,66 @@ qgNGqQ==
 	}
 }
 
+func TestCertPool(t *testing.T) {
+	certPEM1 := `-----BEGIN CERTIFICATE-----
+MIIDADCCAeigAwIBAgIRAMlZFfrjDjpriu1r+XIr1kwwDQYJKoZIhvcNAQELBQAw
+EjEQMA4GA1UEChMHQWNtZSBDbzAeFw0xODA4MDIxMTI0MTlaFw0xOTA4MDIxMTI0
+MTlaMBIxEDAOBgNVBAoTB0FjbWUgQ28wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw
+ggEKAoIBAQDHYGCQkL4xc4djNNtjWcuPAGLmiRLI+uompmccJ7f9vUZgu/gO9oVS
+nQlVRNX4LS0TnZjyQMso+9ZNt9sdyDohkMVmS0O27kD9gz2Pz+otYg0w4TVX0pJp
+c3jwvSoXdqNxrj+Fk9aptIFsfipN2cE7uFA40+rZSlyND+lSB/VvNKILSrp6Ugmo
+CpRRFJ0O8VjYV+qU7RZh9HFIvtW6w9uLeN2jD+k7VGVt6hADpdoSzQiAerZ5+8ee
+IcmAj/G5COGbGAnbuy73/Bmo9b728UXo6b+7GdyXYij/pev/0OcIoT7WKFQJJyVz
+owc+yyEHhKpuKqCy9KNzPQqm7je//BptAgMBAAGjUTBPMA4GA1UdDwEB/wQEAwIF
+oDATBgNVHSUEDDAKBggrBgEFBQcDATAMBgNVHRMBAf8EAjAAMBoGA1UdEQQTMBGC
+CWxvY2FsaG9zdIcEfwAAATANBgkqhkiG9w0BAQsFAAOCAQEAlDF2c4ktrz1BJcQL
+PhyynqOmLCJiPw/A9vSCOuaH2RduHufiO80RKW9KRiLsAAvSToAsFrTNlTL3Jdjp
+UnWjal+gMh3fU+Fw3lGlq/UeYxMjZsTATazy2D2dJWwv0PUWo7dE0w/Thh1SdhEU
+cNpoIDTsrnfa4P300XK+ej5A6gVYa++adAh3QdjLAzOfDxIInMwinMIQy9kACPvd
+XNZ4AfD+wsH0dHTFPr5k12ZJbPMljCFe/rmbDoEpxOwimBcnRohEgOIbKjwEUXRi
+B+q7AnJ0Q1rK/J7ikSDFBBGlg8wHWz+FCINmyyv62qClErI4aA/WN6+ilINJV/gG
+qgNGqQ==
+-----END CERTIFICATE-----`
+	certPEM2 := `-----BEGIN CERTIFICATE-----
+MIIDdTCCAl2gAwIBAgILBAAAAAABFUtaw5QwDQYJKoZIhvcNAQEFBQAwVzELMAkGA1UEBhMCQkUx
+GTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNVBAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkds
+b2JhbFNpZ24gUm9vdCBDQTAeFw05ODA5MDExMjAwMDBaFw0yODAxMjgxMjAwMDBaMFcxCzAJBgNV
+BAYTAkJFMRkwFwYDVQQKExBHbG9iYWxTaWduIG52LXNhMRAwDgYDVQQLEwdSb290IENBMRswGQYD
+VQQDExJHbG9iYWxTaWduIFJvb3QgQ0EwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDa
+DuaZjc6j40+Kfvvxi4Mla+pIH/EqsLmVEQS98GPR4mdmzxzdzxtIK+6NiY6arymAZavpxy0Sy6sc
+THAHoT0KMM0VjU/43dSMUBUc71DuxC73/OlS8pF94G3VNTCOXkNz8kHp1Wrjsok6Vjk4bwY8iGlb
+Kk3Fp1S4bInMm/k8yuX9ifUSPJJ4ltbcdG6TRGHRjcdGsnUOhugZitVtbNV4FpWi6cgKOOvyJBNP
+c1STE4U6G7weNLWLBYy5d4ux2x8gkasJU26Qzns3dLlwR5EiUWMWea6xrkEmCMgZK9FGqkjWZCrX
+gzT/LCrBbBlDSgeF59N89iFo7+ryUp9/k5DPAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIBBjAPBgNV
+HRMBAf8EBTADAQH/MB0GA1UdDgQWBBRge2YaRQ2XyolQL30EzTSo//z9SzANBgkqhkiG9w0BAQUF
+AAOCAQEA1nPnfE920I2/7LqivjTFKDK1fPxsnCwrvQmeU79rXqoRSLblCKOzyj1hTdNGCbM+w6Dj
+Y1Ub8rrvrTnhQ7k4o+YviiY776BQVvnGCv04zcQLcFGUl5gE38NflNUVyRRBnMRddWQVDf9VMOyG
+j/8N7yy5Y0b2qvzfvGn9LhJIZJrglfCm7ymPAbEVtQwdpf5pLGkkeB6zpxxxYu7KyJesF12KwvhH
+hm4qxFYxldBniYUr+WymXUadDKqC5JlR3XC321Y9YeRq4VzW9v493kHMB65jUr9TU/Qr6cf9tveC
+X4XSQRjbgbMEHMUfpIBvFSDJ3gyICh3WZlXi/EjJKSZp4A==
+-----END CERTIFICATE-----`
+
+	var gotCertPool x509.CertPool
+	certPoolValue := CertPool(&gotCertPool)
+	certPoolValue.Set(fmt.Sprintf("%s\n%s", certPEM1, certPEM2))
+
+	block1, _ := pem.Decode([]byte(certPEM1))
+	cert1, _ := x509.ParseCertificate(block1.Bytes)
+	block2, _ := pem.Decode([]byte(certPEM2))
+	cert2, _ := x509.ParseCertificate(block2.Bytes)
+	expectedCertPool := x509.NewCertPool()
+	expectedCertPool.AddCert(cert1)
+	expectedCertPool.AddCert(cert2)
+
+	if len(gotCertPool.Subjects()) != 2 {
+		t.Fatalf("got: %d, expected %d", len(gotCertPool.Subjects()), 2)
+	}
+
+	if !reflect.DeepEqual(gotCertPool.Subjects(), expectedCertPool.Subjects()) {
+		t.Fatalf("got: %v, expected %v", gotCertPool, expectedCertPool)
+	}
+}
+
 func TestTLSCertificate(t *testing.T) {
 	keyPEM := `-----BEGIN RSA PRIVATE KEY-----
 MIIEpAIBAAKCAQEAx2BgkJC+MXOHYzTbY1nLjwBi5okSyPrqJqZnHCe3/b1GYLv4
