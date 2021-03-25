@@ -126,6 +126,7 @@ func (v certPoolValue) String() string {
 
 // Set implements flag.Value.Set.
 func (v *certPoolValue) Set(value string) error {
+	value = strings.ReplaceAll(value, `\n`, "\n")
 	pool := x509.NewCertPool()
 	if ok := pool.AppendCertsFromPEM([]byte(value)); !ok {
 		return fmt.Errorf("failed to append certs from pem")
