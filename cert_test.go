@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
+	"flag"
 	"fmt"
 	"reflect"
 	"testing"
@@ -199,4 +200,28 @@ qgNGqQ==
 	if !reflect.DeepEqual(gotCert, expectedCert) {
 		t.Fatalf("got: %v, expected %v", gotCert, expectedCert)
 	}
+}
+
+func TestCertificateVar(t *testing.T) {
+	var cert x509.Certificate
+	fs := flag.NewFlagSet("test", flag.ExitOnError)
+	fs.Var(Certificate(&cert), "cert", "certificate")
+}
+
+func TestCertificatesVar(t *testing.T) {
+	var certs []*x509.Certificate
+	fs := flag.NewFlagSet("test", flag.ExitOnError)
+	fs.Var(Certificates(&certs), "certs", "certificates")
+}
+
+func TestCertPoolVar(t *testing.T) {
+	var certPool x509.CertPool
+	fs := flag.NewFlagSet("test", flag.ExitOnError)
+	fs.Var(CertPool(&certPool), "cert-pool", "certificate pool")
+}
+
+func TestTLSCertificateVar(t *testing.T) {
+	var tlsCert tls.Certificate
+	fs := flag.NewFlagSet("test", flag.ExitOnError)
+	fs.Var(TLSCertificate(&tlsCert), "tls-cert", "TLS certificate")
 }

@@ -4,6 +4,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"flag"
 	"reflect"
 	"testing"
 )
@@ -70,4 +71,16 @@ VQIDAQAB
 	if !reflect.DeepEqual(gotPub, *expectedPub.(*rsa.PublicKey)) {
 		t.Fatalf("got: %v, expected %v", gotPub, expectedPub)
 	}
+}
+
+func TestRSAPublicKeyVar(t *testing.T) {
+	var pub rsa.PublicKey
+	fs := flag.NewFlagSet("test", flag.ExitOnError)
+	fs.Var(RSAPublicKey(&pub), "public-key", "public key")
+}
+
+func TestRSAPrivateKeyVar(t *testing.T) {
+	var priv rsa.PrivateKey
+	fs := flag.NewFlagSet("test", flag.ExitOnError)
+	fs.Var(RSAPrivateKey(&priv), "private-key", "private key")
 }

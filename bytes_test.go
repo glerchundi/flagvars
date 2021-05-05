@@ -145,3 +145,21 @@ func TestBytesFile(t *testing.T) {
 		t.Errorf("expected %q, got '%X'", bytesFile, fb)
 	}
 }
+
+func TestBytesHexVar(t *testing.T) {
+	var b []byte
+	fs := flag.NewFlagSet("test", flag.ExitOnError)
+	fs.Var(BytesHex(&b, nil), "hex", "hex data")
+}
+
+func TestBytesBase64Var(t *testing.T) {
+	var b []byte
+	fs := flag.NewFlagSet("test", flag.ExitOnError)
+	fs.Var(BytesBase64(&b, nil), "base64", "base64 data")
+}
+
+func TestBytesFileVar(t *testing.T) {
+	var b []byte
+	fs := flag.NewFlagSet("test", flag.ExitOnError)
+	fs.Var(BytesFile(&b, ""), "file", "file data")
+}
