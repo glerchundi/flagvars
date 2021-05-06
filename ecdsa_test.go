@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/x509"
 	"encoding/pem"
+	"flag"
 	"reflect"
 	"testing"
 )
@@ -43,4 +44,16 @@ Yh0aD0NY2qZxSALwbsuNXZMlELIrWAret2yxju6fMs2Jg7vhcoH++MfgRw==
 	if !reflect.DeepEqual(gotPub, *expectedPub.(*ecdsa.PublicKey)) {
 		t.Fatalf("got: %v, expected %v", gotPub, expectedPub)
 	}
+}
+
+func TestECDSAPublicKeyVar(t *testing.T) {
+	var pub ecdsa.PublicKey
+	fs := flag.NewFlagSet("test", flag.ExitOnError)
+	fs.Var(ECDSAPublicKey(&pub), "public-key", "public key")
+}
+
+func TestECDSAPrivateKeyVar(t *testing.T) {
+	var priv ecdsa.PrivateKey
+	fs := flag.NewFlagSet("test", flag.ExitOnError)
+	fs.Var(ECDSAPrivateKey(&priv), "private-key", "private key")
 }

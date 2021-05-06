@@ -56,6 +56,9 @@ type ecdsaPublicKeyValue struct {
 
 // String implements flag.Value.String.
 func (v ecdsaPublicKeyValue) String() string {
+	if v.dst == nil || (*v.dst == ecdsa.PublicKey{}) {
+		return ""
+	}
 	publicKeyDer, _ := x509.MarshalPKIXPublicKey(v.dst)
 	return string(pem.EncodeToMemory(&pem.Block{
 		Type:  "PUBLIC KEY",
